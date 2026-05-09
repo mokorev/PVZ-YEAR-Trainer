@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="plants vs zombie/plants vs zombie.vcxproj" Id="4f9787c8-8317-4512-98df-34845ecce79c" />
+</Solution>
