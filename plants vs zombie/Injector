@@ -1,0 +1,48 @@
+#include <Windows.h>
+#include <iostream>
+
+int main(){
+	DWORD pid;
+	HWND hwnd = FindWindowA(NULL, "Plants vs. Zombies");
+	if (!hwnd) {
+		printf("findwindowA is error,no find title!");
+		return 1;
+	}
+	GetWindowThreadProcessId(hwnd, &pid);
+	const char* dllPath = "plants vs zombie.dll";
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+	if (!hProcess) {
+		printf("请以管理员权限运行脚本！！！");
+		return 1;
+	}
+
+	SIZE_T  size_dll = strlen(dllPath) + 1;
+	LPVOID dll_addrs = VirtualAllocEx(hProcess, NULL, size_dll,MEM_COMMIT | MEM_RESERVE,PAGE_READWRITE);
+
+	BOOL w_yes = WriteProcessMemory(hProcess, dll_addrs, dllPath, size_dll,NULL);
+	if (!w_yes) {
+		printf("writeprocessmemory is error!");
+	}
+		
+	HMODULE kernel = GetModuleHandleA("kernel32.dll");;
+
+	LPTHREAD_START_ROUTINE pLibrary = (LPTHREAD_START_ROUTINE)GetProcAddress(kernel, "LoadLibraryA");
+
+	if (!pLibrary) {
+		printf("getprocaddress is error");
+	}
+
+	HANDLE hRetmoteThread = CreateRemoteThread(hProcess,NULL,0,pLibrary,dll_addrs,0,NULL);
+	if (!hRetmoteThread) {
+		printf("createremotethread is error");
+	}
+
+	WaitForSingleObject(hRetmoteThread,INFINITE);
+
+	VirtualFreeEx(hProcess,dll_addrs,0,MEM_RELEASE);
+
+	CloseHandle(hRetmoteThread);
+	CloseHandle(hProcess);
+
+	return 0;
+}
